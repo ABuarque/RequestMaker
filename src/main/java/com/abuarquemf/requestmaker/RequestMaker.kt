@@ -9,6 +9,14 @@ import java.net.URL
 import java.util.HashMap
 
 /**
+ * This data class hold the response code and
+ * state of object response.
+ *
+ */
+data class RequestResponse(var responseState: String = "",
+                           var responseCode: Int = 0)
+
+/**
  * This class provides a fluent interface to
  * make some HTTP requests.
  * It's use requires the desired verb,
@@ -125,8 +133,9 @@ class RequestMaker {
      * @param http verb to do
      * @return request response as string
      */
-    private fun requestHandler(httpVerb: String): String {
+    private fun requestHandler(httpVerb: String): RequestResponse {
         var response = "{}"
+        var responseCode = 0
         try {
             val url = URL(endpoint)
             val connection = url!!.openConnection() as HttpURLConnection
@@ -140,19 +149,22 @@ class RequestMaker {
                 output.writeBytes(objectState)
                 output.close()
             }
-            val input = BufferedReader(InputStreamReader(connection!!.inputStream))
-            val responseBuffer = StringBuffer()
-            var inputLine = input.readLine()
-            while(inputLine != null) {
-                responseBuffer.append(inputLine)
-                inputLine = input.readLine()
+            responseCode = connection.responseCode
+            if((connection.responseCode / 100) == 2) {
+                val input = BufferedReader(InputStreamReader(connection!!.inputStream))
+                val responseBuffer = StringBuffer()
+                var inputLine = input.readLine()
+                while (inputLine != null) {
+                    responseBuffer.append(inputLine)
+                    inputLine = input.readLine()
+                }
+                input.close()
+                response = responseBuffer!!.toString()
             }
-            input.close()
-            response = responseBuffer!!.toString()
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        return response
+        return RequestResponse(response, responseCode)
     }
 
 }

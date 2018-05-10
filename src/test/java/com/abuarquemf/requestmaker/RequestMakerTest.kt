@@ -22,4 +22,11 @@ class RequestMakerTest {
         println(requestResponse)
     }
 
+    @Test
+    fun shouldNotHaveAccess() {
+        val response = RequestMaker().toEndpoint("http://localhost:8099/activities/5/calendar")
+                .addToHeader("Content-Type", "application/json")
+                .doGet()
+        println(response)
+    }
 }
